@@ -1,6 +1,6 @@
 package dev.lgawin.android.sample.car
 
-import android.content.Context
+import android.content.ComponentName
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,17 +14,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerControlView
 import dev.lgawin.android.sample.car.ui.theme.SampleCarAppTheme
+import kotlinx.coroutines.guava.await
 
 class MainActivity : ComponentActivity() {
 
@@ -43,7 +45,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            val player = remember { createPlayer(context) }
+            val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+            val factory = MediaController.Builder(context, token).buildAsync()
+
+            val player by produceState<Player?>(
+                initialValue = null,
+                producer = { value = factory.await() },
+            )
 
             SampleCarAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -51,12 +59,12 @@ class MainActivity : ComponentActivity() {
                     Column {
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             items(radios) { (name, uri) ->
-                                TextButton(onClick = { player.setMediaUri(uri) }) {
+                                TextButton(onClick = { player?.setMediaUri(uri) }) {
                                     Text(text = name, modifier = Modifier.fillMaxWidth())
                                 }
                             }
                         }
-                        DisposableEffect(
+                        if (player != null) {
                             AndroidView(
                                 modifier = Modifier.fillMaxWidth(),
                                 factory = {
@@ -67,29 +75,15 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                             )
-                        ) {
-                            onDispose { player.release() }
+                            DisposableEffect(Unit) {
+                                onDispose { player?.release() }
+                            }
                         }
                     }
                 }
             }
-
         }
     }
-
-    private fun createPlayer(context: Context) = ExoPlayer.Builder(context)
-        .setAudioAttributes(
-            AudioAttributes.Builder()
-//                    .setUsage(C.USAGE_MEDIA)
-//                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                .build(),
-            true, // handle audio focus
-        )
-        .setHandleAudioBecomingNoisy(true) // pause when headphones are disconnected
-        .build()
-        .apply {
-            prepare()
-        }
 }
 
 private fun Player.setMediaUri(uri: String) {

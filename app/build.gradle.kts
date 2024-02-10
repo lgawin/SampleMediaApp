@@ -60,6 +60,8 @@ dependencies {
     val media_version = "1.2.1"
     implementation("androidx.media3:media3-exoplayer:$media_version")
     implementation("androidx.media3:media3-ui:$media_version")
+    implementation("androidx.media3:media3-session:$media_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
