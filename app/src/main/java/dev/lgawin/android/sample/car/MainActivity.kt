@@ -1,7 +1,9 @@
 package dev.lgawin.android.sample.car
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,8 +13,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -22,10 +27,6 @@ import androidx.media3.ui.PlayerControlView
 import dev.lgawin.android.sample.car.ui.theme.SampleCarAppTheme
 
 class MainActivity : ComponentActivity() {
-
-    private lateinit var controlView: PlayerControlView
-    private var player: Player? = null
-
 
     @OptIn(UnstableApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,41 +41,43 @@ class MainActivity : ComponentActivity() {
             "9128.live" to "https://streams.radio.co/s0aa1e6f4a/listen",
         )
 
-        setContentView(R.layout.activity_main)
-        controlView = findViewById(R.id.controls)
+        setContent {
+            val context = LocalContext.current
+            val player = remember { createPlayer(context) }
 
-        findViewById<ComposeView>(R.id.compose).setContent {
             SampleCarAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colorScheme.background) {
                     Column {
-                        LazyColumn {
+                        LazyColumn(modifier = Modifier.weight(1f)) {
                             items(radios) { (name, uri) ->
-                                TextButton(onClick = { player?.setMediaUri(uri) }) {
+                                TextButton(onClick = { player.setMediaUri(uri) }) {
                                     Text(text = name, modifier = Modifier.fillMaxWidth())
                                 }
                             }
                         }
+                        DisposableEffect(
+                            AndroidView(
+                                modifier = Modifier.fillMaxWidth(),
+                                factory = {
+                                    PlayerControlView(it).apply {
+                                        this.player = player
+                                        showTimeoutMs = -1
+                                        setShowNextButton(true)
+                                    }
+                                },
+                            )
+                        ) {
+                            onDispose { player.release() }
+                        }
                     }
                 }
             }
+
         }
     }
 
-    @OptIn(UnstableApi::class)
-    override fun onStart() {
-        super.onStart()
-        val context = this
-        player = createPlayer(context)
-        controlView.player = player
-    }
-
-    override fun onStop() {
-        super.onStop()
-        player?.release()
-    }
-
-    private fun createPlayer(context: MainActivity) = ExoPlayer.Builder(context)
+    private fun createPlayer(context: Context) = ExoPlayer.Builder(context)
         .setAudioAttributes(
             AudioAttributes.Builder()
 //                    .setUsage(C.USAGE_MEDIA)
