@@ -2,28 +2,32 @@ package dev.lgawin.android.sample.car
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerControlView
 import dev.lgawin.android.sample.car.ui.theme.SampleCarAppTheme
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var controlView: PlayerControlView
     private var player: Player? = null
 
+
+    @OptIn(UnstableApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,23 +40,20 @@ class MainActivity : ComponentActivity() {
             "9128.live" to "https://streams.radio.co/s0aa1e6f4a/listen",
         )
 
-        setContent {
+        setContentView(R.layout.activity_main)
+        controlView = findViewById(R.id.controls)
+
+        findViewById<ComposeView>(R.id.compose).setContent {
             SampleCarAppTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(color = MaterialTheme.colorScheme.background) {
                     Column {
                         LazyColumn {
                             items(radios) { (name, uri) ->
-                                TextButton(onClick = { player?.playFromUri(uri) }) {
-                                    Text(text = name)
+                                TextButton(onClick = { player?.setMediaUri(uri) }) {
+                                    Text(text = name, modifier = Modifier.fillMaxWidth())
                                 }
                             }
-                        }
-                        Button(
-                            onClick = { player?.stop() },
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                        ) {
-                            Text(text = "Stop")
                         }
                     }
                 }
@@ -60,10 +61,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(UnstableApi::class)
     override fun onStart() {
         super.onStart()
         val context = this
         player = createPlayer(context)
+        controlView.player = player
     }
 
     override fun onStop() {
@@ -82,12 +85,10 @@ class MainActivity : ComponentActivity() {
         .setHandleAudioBecomingNoisy(true) // pause when headphones are disconnected
         .build()
         .apply {
-//            playWhenReady = true
             prepare()
         }
 }
 
-private fun Player.playFromUri(uri: String) {
+private fun Player.setMediaUri(uri: String) {
     setMediaItem(MediaItem.fromUri(uri))
-    play()
 }
