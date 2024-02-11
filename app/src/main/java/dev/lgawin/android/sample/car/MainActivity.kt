@@ -1,6 +1,5 @@
 package dev.lgawin.android.sample.car
 
-import android.content.ComponentName
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,24 +13,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
+import androidx.media3.session.MediaBrowser
 import androidx.media3.ui.PlayerControlView
 import dev.lgawin.android.sample.car.ui.theme.SampleCarAppTheme
-import kotlinx.coroutines.guava.await
+import dev.lgawin.android.sample.car.usecases.ProvideMediaBrowserUseCase
+import dev.lgawin.media.playUri
 
 class MainActivity : ComponentActivity() {
+
+    private val provideMediaBrowser = ProvideMediaBrowserUseCase()
+    private val browseMedia = DevUseCases.BrowseMedia()
 
     @OptIn(UnstableApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +42,10 @@ class MainActivity : ComponentActivity() {
 
         // taken from https://github.com/mikepierce/internet-radio-streams
         val radios = listOf(
+            "RMF FM" to "http://195.150.20.242:8000/rmf_fm",
+            "Radio Złote Przeboje" to "http://poznan7.radio.pionier.net.pl:8000/tuba9-1.mp3",
+            "RMF Classic" to "http://rmfstream1.interia.pl:8000/rmf_classic",
+            ////
             "Dublab" to "https://dublab.out.airtime.pro/dublab_a",
             "AmbientSleepingPill" to "http://radio.stereoscenic.com:80/asp-h.mp3",
             "Frisky-Chill" to "https://chill.friskyradio.com",
@@ -48,13 +55,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
-            val factory = MediaController.Builder(context, token).buildAsync()
 
-            val player by produceState<Player?>(
+            val browser by produceState<MediaBrowser?>(
                 initialValue = null,
-                producer = { value = factory.await() },
+                producer = {
+                    value = provideMediaBrowser(context)
+                },
             )
+
+            LaunchedEffect(browser) {
+                if (browser == null) return@LaunchedEffect
+                browser?.let { browseMedia(it) }
+            }
+
+            val player = browser
+            DisposableEffect(Unit) {
+                onDispose { player?.release() }
+            }
 
             SampleCarAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -62,28 +79,13 @@ class MainActivity : ComponentActivity() {
                     Column {
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             items(radios) { (name, uri) ->
-                                TextButton(onClick = { player?.setMediaUri(uri) }) {
+                                TextButton(onClick = { player?.playUri(uri) }) {
                                     Text(text = name, modifier = Modifier.fillMaxWidth())
                                 }
                             }
                         }
-                        if (player != null) {
-                            Surface(color = Color.Black) {
-                                AndroidView(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(240.dp),
-                                    factory = {
-                                        PlayerControlView(it).apply {
-                                            this.player = player
-                                            showTimeoutMs = -1
-                                        }
-                                    },
-                                )
-                            }
-                            DisposableEffect(Unit) {
-                                onDispose { player?.release() }
-                            }
+                        player?.let {
+                            PlayerControl(it)
                         }
                     }
                 }
@@ -92,6 +94,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun Player.setMediaUri(uri: String) {
-    setMediaItem(MediaItem.fromUri(uri))
+@OptIn(UnstableApi::class)
+@Composable
+private fun PlayerControl(player: Player, modifier: Modifier = Modifier) {
+    Surface(color = Color.Black) {
+        AndroidView(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(240.dp),
+            factory = {
+                PlayerControlView(it).apply {
+                    this.player = player
+                    showTimeoutMs = -1
+                }
+            },
+        )
+    }
 }
