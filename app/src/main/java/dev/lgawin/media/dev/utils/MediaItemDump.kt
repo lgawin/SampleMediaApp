@@ -1,4 +1,4 @@
-package dev.lgawin.utils.media
+package dev.lgawin.media.dev.utils
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata

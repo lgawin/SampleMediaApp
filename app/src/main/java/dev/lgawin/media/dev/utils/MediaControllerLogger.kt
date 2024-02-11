@@ -1,4 +1,4 @@
-package dev.lgawin.utils.media
+package dev.lgawin.media.dev.utils
 
 import android.app.PendingIntent
 import android.os.Bundle
@@ -12,7 +12,8 @@ import androidx.media3.session.SessionCommands
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.ListenableFuture
 
-@OptIn(UnstableApi::class) @Suppress("FunctionName")
+@OptIn(UnstableApi::class)
+@Suppress("FunctionName")
 fun MediaControllerLogger(tag: String = "MediaControllerLogger") = object : MediaController.Listener {
 
     private val TAG = tag

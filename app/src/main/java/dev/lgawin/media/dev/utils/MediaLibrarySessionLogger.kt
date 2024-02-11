@@ -1,14 +1,10 @@
-package dev.lgawin.android.sample.car
+package dev.lgawin.media.dev.utils
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.OptIn
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
 import androidx.media3.common.Rating
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -17,9 +13,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import dev.lgawin.utils.media.dump
 
 @Suppress("FunctionName")
 @OptIn(UnstableApi::class)

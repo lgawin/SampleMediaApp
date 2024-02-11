@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import dev.lgawin.android.sample.car.PlaybackService
-import dev.lgawin.utils.media.MediaBrowserLogger
+import dev.lgawin.media.dev.utils.MediaBrowserLogger
 import kotlinx.coroutines.guava.await
 
 class ProvideMediaBrowserUseCase {

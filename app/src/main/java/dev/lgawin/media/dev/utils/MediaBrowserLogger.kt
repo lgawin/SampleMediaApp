@@ -1,4 +1,4 @@
-package dev.lgawin.utils.media
+package dev.lgawin.media.dev.utils
 
 import android.util.Log
 import androidx.annotation.OptIn
