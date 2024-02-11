@@ -92,12 +92,21 @@ object DevUseCases {
             setMediaType(type)
         }
 
-        private fun radioStation(uuid: String, name: String, uri: String) =
-            mediaItem(uuid, name, uri, type = MediaMetadata.MEDIA_TYPE_RADIO_STATION)
+        private fun radioStation(uuid: String, name: String, src: String, artWork: String? = null) =
+            mediaItem(uuid, name, src, type = MediaMetadata.MEDIA_TYPE_RADIO_STATION) {
+                artWork?.let { setArtworkUri(Uri.parse(it)) }
+            }
 
-        private fun mediaItem(uuid: String, name: String, uri: String, type: Int = MediaMetadata.MEDIA_TYPE_MUSIC) = mediaItem(uuid, uri) {
+        private fun mediaItem(
+            uuid: String,
+            name: String,
+            uri: String,
+            type: Int = MediaMetadata.MEDIA_TYPE_MUSIC,
+            configure: MediaMetadata.Builder.() -> Unit = {},
+        ) = mediaItem(uuid, uri) {
             setTitle(name)
             setMediaType(type)
+            configure(this)
         }
 
         private val libraryRoot = samplePlaylistRoot
@@ -109,22 +118,26 @@ object DevUseCases {
                     radioStation(
                         uuid = "7d3b35f4-bce7-402c-b1c6-37cd206d8bbf",
                         name = "RMF FM",
-                        uri = "http://195.150.20.242:8000/rmf_fm",
+                        src = "http://195.150.20.242:8000/rmf_fm",
+                        artWork = "https://www.rmf.fm/inc/img/rmf-fm-logo.jpg",
                     ),
                     radioStation(
                         uuid = "3b3afcb2-217f-4e22-a053-63063a162b9f",
                         name = "Radio ZET",
-                        uri = "http://zet090-02.cdn.eurozet.pl:8404/",
+                        src = "http://zet090-02.cdn.eurozet.pl:8404/",
+                        artWork = "https://prowly-uploads.s3.eu-west-1.amazonaws.com/uploads/4587/assets/32616/Logo_RadioZET_red_2017_RGB.jpg",
                     ),
                     radioStation(
                         uuid = "c8d5c6a6-2cca-4485-9cae-2fd83d987ab7",
                         name = "Radio Złote Przeboje",
-                        uri = "http://poznan7.radio.pionier.net.pl:8000/tuba9-1.mp3/",
+                        src = "http://poznan7.radio.pionier.net.pl:8000/tuba9-1.mp3/",
+                        artWork = "https://myradioonline.pl/public/uploads/radio_img/radio-zlote-przeboje/play_250_250.jpg",
                     ),
                     radioStation(
                         uuid = "9ec3b93b-d511-434d-97e5-9bbdece47492",
                         name = "Radio Pogoda",
-                        uri = "http://stream13.radioagora.pl/tuba38-1.mp3",
+                        src = "http://stream13.radioagora.pl/tuba38-1.mp3",
+                        artWork = "https://static.wirtualnemedia.pl/media/top/RadioPogoda_logo655.png",
                     ),
                 ),
             ),
