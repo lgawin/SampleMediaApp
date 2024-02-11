@@ -1,14 +1,12 @@
-package dev.lgawin.android.sample.car
+package dev.lgawin.media.service
 
 import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C.INDEX_UNSET
-import androidx.media3.common.C.TIME_UNSET
+import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -17,10 +15,10 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import dev.lgawin.media.app.MainActivity
 import dev.lgawin.media.dev.DevUseCases
 import dev.lgawin.media.dev.utils.MediaLibrarySessionLogger
 import dev.lgawin.media.dev.utils.MediaSessionServiceLogger
@@ -45,7 +43,7 @@ class PlaybackService : MediaLibraryService() {
                     context,
                     1,
                     Intent(context, MainActivity::class.java),
-                    FLAG_IMMUTABLE,
+                    PendingIntent.FLAG_IMMUTABLE,
                 )
             )
             .build()
@@ -132,7 +130,7 @@ private fun createPlayer(context: Context): Player {
 
         override fun getDuration(): Long {
             if (LOGD) Log.d(TAG, "getDuration")
-            return TIME_UNSET
+            return C.TIME_UNSET
         }
     }
 }
@@ -179,10 +177,10 @@ private fun createCallback(
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
-    ): ListenableFuture<MediaItemsWithStartPosition> {
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
         logger.onPlaybackResumption(mediaSession, controller)
 
-        return MediaItemsWithStartPosition(listOf(), 0, 0).immediately
+        return MediaSession.MediaItemsWithStartPosition(listOf(), 0, 0).immediately
     }
 
     override fun onSetMediaItems(
@@ -191,11 +189,11 @@ private fun createCallback(
         mediaItems: MutableList<MediaItem>,
         startIndex: Int,
         startPositionMs: Long,
-    ): ListenableFuture<MediaItemsWithStartPosition> {
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
         logger.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
-        require(startIndex == INDEX_UNSET)
-        require(startPositionMs == TIME_UNSET)
+        require(startIndex == C.INDEX_UNSET)
+        require(startPositionMs == C.TIME_UNSET)
 
         mediaItems.forEach {
             Log.d(TAG, "onSetMediaItems: ${it.dump()}")
@@ -205,7 +203,7 @@ private fun createCallback(
             if (it.localConfiguration != null) it else (mediaTree.getById(it.mediaId) ?: it)
         }
         player.setMediaItems(items)
-        return MediaItemsWithStartPosition(items, startIndex, startPositionMs).immediately
+        return MediaSession.MediaItemsWithStartPosition(items, startIndex, startPositionMs).immediately
     }
 
     private val <T> T.immediately

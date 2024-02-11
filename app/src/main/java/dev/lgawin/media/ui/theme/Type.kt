@@ -1,4 +1,4 @@
-package dev.lgawin.android.sample.car.ui.theme
+package dev.lgawin.media.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

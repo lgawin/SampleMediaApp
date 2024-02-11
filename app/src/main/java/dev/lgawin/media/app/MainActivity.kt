@@ -1,4 +1,4 @@
-package dev.lgawin.android.sample.car
+package dev.lgawin.media.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -27,10 +27,10 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.ui.PlayerControlView
-import dev.lgawin.android.sample.car.ui.theme.SampleCarAppTheme
-import dev.lgawin.android.sample.car.usecases.ProvideMediaBrowserUseCase
+import dev.lgawin.media.ui.theme.AppTheme
 import dev.lgawin.media.dev.DevUseCases
 import dev.lgawin.media.playUri
+import dev.lgawin.media.usecases.ProvideMediaBrowserUseCase
 
 class MainActivity : ComponentActivity() {
 
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                 onDispose { player?.release() }
             }
 
-            SampleCarAppTheme {
+            AppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colorScheme.background) {
                     Column {

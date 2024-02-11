@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.lgawin.android.sample.car"
+    namespace = "dev.lgawin.media.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "dev.lgawin.android.sample.car"
+        applicationId = "dev.lgawin.media.app"
         minSdk = 31
         targetSdk = 34
         versionCode = 1
@@ -47,7 +47,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
